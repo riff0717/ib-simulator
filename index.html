@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>HoI4 シミュレーターテスト</title>
+</head>
+<body>
+    <h1>HoI4 内政計算テスト</h1>
+    <button onclick="runSimulation()">計算実行</button>
+
+    <script>
+        function runSimulation() {
+            // 1. 初期条件（1936年ドイツのイメージ）
+            let civFactories = 30; // 民需工場数
+            let consumerGoodsPercent = 0.30; // 消費財 30%
+            
+            // 実際の内容に使える民需 = 総民需 * (1 - 消費財の割合)
+            let availableCivs = civFactories * (1 - consumerGoodsPercent);
+            
+            // 2. 建設力の計算（HoI4の基本ルール：工場1基あたり出力5）
+            let baseConstructionPower = availableCivs * 5;
+            
+            // 3. 結果をブラウザのコンソール（開発者ツール）に表示
+            console.log("総民需:", civFactories);
+            console.log("消費財に消える数:", civFactories * consumerGoodsPercent);
+            console.log("自由に使える民需:", availableCivs);
+            console.log("1日あたりの基礎建設力:", baseConstructionPower);
+            
+            alert("計算完了！ブラウザの『検証（F12）』→『コンソール』を見てね。");
+        }
+    </script>
+</body>
+</html>
