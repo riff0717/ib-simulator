@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>HoI4 イノバ環境シミュレータ</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Hiragino Kaku Gothic ProN",Meiryo,Arial;margin:20px}
+    .row{display:flex;gap:12px;align-items:center;margin:8px 0}
+    label{min-width:180px}
+    input[type=range]{width:320px}
+    .output{background:#f6f8fa;border:1px solid #ddd;padding:12px;margin-top:16px}
+    .small{font-size:0.9em;color:#555}
+  </style>
+</head>
+<body>
+  <h1>HoI4 イノバ環境シミュレータ</h1>
+  <p class="small">Steam Workshop の "innovative balance" 相当の環境を想定した簡易シミュレータ。パラメータを調整して概算を確認できます（実ゲームと完全一致しません）。</p>
+
+  <div class="row">
+    <label for="civilian">民需工場 (Civilian)</label>
+    <input id="civilian" type="range" min="0" max="200" value="30" oninput="update()">
+    <output id="civilianVal">30</output>
+  </div>
+
+  <div class="row">
+    <label for="military">軍需工場 (Military)</label>
+    <input id="military" type="range" min="0" max="200" value="20" oninput="update()">
+    <output id="militaryVal">20</output>
+  </div>
+
+  <div class="row">
+    <label for="consumer">消費財割合 (Consumer goods %)</label>
+    <input id="consumer" type="range" min="0" max="0.9" step="0.01" value="0.30" oninput="update()">
+    <output id="consumerVal">0.30</output>
+  </div>
+
+  <div class="row">
+    <label for="constrEff">建設効率 (Construction efficiency %)</label>
+    <input id="constrEff" type="range" min="10" max="300" value="100" oninput="update()">
+    <output id="constrEffVal">100%</output>
+  </div>
+
+  <div class="row">
+    <label for="prodEff">生産効率 (Production efficiency %)</label>
+    <input id="prodEff" type="range" min="10" max="300" value="100" oninput="update()">
+    <output id="prodEffVal">100%</output>
+  </div>
+
+  <div class="row">
+    <label for="manpower">動員可能人員 (x1000)</label>
+    <input id="manpower" type="range" min="0" max="20000" step="100" value="10000" oninput="update()">
+    <output id="manpowerVal">10000</output>
+  </div>
+
+  <div class="row">
+    <label for="supply">供給効率 (Supply efficiency %)</label>
+    <input id="supply" type="range" min="30" max="150" value="100" oninput="update()">
+    <output id="supplyVal">100%</output>
+  </div>
+
+  <div class="row">
+    <label for="weather">天候</label>
+    <select id="weather" onchange="update()">
+      <option value="1">通常</option>
+      <option value="0.8">悪天 (降雨/雪)</option>
+      <option value="0.6">厳冬</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <label for="innova">イノバモッド調整</label>
+    <input id="innova" type="checkbox" checked onchange="update()"> 有効（モッドの簡易ボーナス: 生産+25%、建設+10%）
+  </div>
+
+  <div class="output" id="results"></div>
+
+  <script>
+    function fmt(n){return Number(n).toLocaleString()}
+
+    function update(){
+      const civ = Number(document.getElementById('civilian').value)
+      document.getElementById('civilianVal').value = civ
+      const mil = Number(document.getElementById('military').value)
+      document.getElementById('militaryVal').value = mil
+      const consumer = Number(document.getElementById('consumer').value)
+      document.getElementById('consumerVal').value = consumer.toFixed(2)
+      const constrEff = Number(document.getElementById('constrEff').value)/100
+      document.getElementById('constrEffVal').value = (constrEff*100).toFixed(0) + '%'
+      const prodEff = Number(document.getElementById('prodEff').value)/100
+      document.getElementById('prodEffVal').value = (prodEff*100).toFixed(0) + '%'
+      const manpower = Number(document.getElementById('manpower').value)
+      document.getElementById('manpowerVal').value = fmt(manpower)
+      const supplyEff = Number(document.getElementById('supply').value)/100
+      document.getElementById('supplyVal').value = (supplyEff*100).toFixed(0) + '%'
+      const weather = Number(document.getElementById('weather').value)
+      const innova = document.getElementById('innova').checked
+
+      // モッド効果（簡易）
+      const modProd = innova ? 1.25 : 1.0
+      const modConstr = innova ? 1.10 : 1.0
+
+      // 消費財で使われる民需
+      const civAfterConsumer = civ * (1 - consumer)
+
+      // 建設力 (簡易モデル)
+      // HoI4 1民需 = 5 建設点 (仮) をベースに、建設効率・モッドを反映
+      const baseConstructionPower = civAfterConsumer * 5 * constrEff * modConstr * weather
+
+      // 製造出力（装備生産）
+      // 軍需工場をベースに生産効率とモッド
+      const equipmentOutput = mil * prodEff * modProd * weather
+
+      // 人員で配備可能な師団数（概算）: 1師団あたり120k 人員
+      const divisionPerManpower = 120000
+      const possibleDivisions = Math.floor((manpower*1000) / divisionPerManpower)
+
+      // 供給による減衰（簡易）
+      const supplyPenalty = Math.max(0.1, 1 - (1 - supplyEff) * 0.5) // supplyEff低いと生産等にペナルティ
+
+      const effectiveEquipmentOutput = equipmentOutput * supplyPenalty
+      const effectiveConstruction = baseConstructionPower * supplyPenalty
+
+      // 表示
+      const results = document.getElementById('results')
+      results.innerHTML = `
+        <strong>入力</strong>
+        <div class="small">民需: ${fmt(civ)} / 軍需: ${fmt(mil)} / 消費財: ${(consumer*100).toFixed(0)}% / 人員: ${fmt(manpower)}千</div>
+        <hr>
+        <strong>概算結果</strong>
+        <ul>
+          <li>自由に使える民需: ${fmt(civAfterConsumer.toFixed(2))}</li>
+          <li>1日あたり 建設力（概算）: ${fmt(effectiveConstruction.toFixed(2))} 建設点</li>
+          <li>装備生産（相対値）: ${fmt(effectiveEquipmentOutput.toFixed(2))} (軍需×効率×モッド×天候×供給)</li>
+          <li>動員で配備可能な師団数（概算）: ${fmt(possibleDivisions)}</li>
+          <li>天候補正: ${weather}</li>
+          <li>モッド補正: 生産×${modProd}, 建設×${modConstr}</li>
+        </ul>
+        <div class="small">注: 本ツールは簡易モデルです。正確なゲームロジックやMODの内部計算とは異なります。</div>
+      `
+    }
+
+    // 初期表示
+    update()
+  </script>
+</body>
+</html>
