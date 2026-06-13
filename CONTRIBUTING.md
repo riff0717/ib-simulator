@@ -1,18 +1,18 @@
-# Contributing
+# コントリビューション
 
-This repository follows GitHub Flow for development.
+このリポジトリでは GitHub Flow を採用しています。
 
-Branching
-- Create short-lived feature branches from `main`.
-- Naming: `feature/ISSUE-123-short-desc`, `fix/ISSUE-123-short-desc`, `chore/short-desc`.
+ブランチ
+- `main` から短命のフィーチャーブランチを作成してください。
+- 命名例: `feature/ISSUE-123-説明`、`fix/ISSUE-123-説明`、`chore/説明`。
 
-Workflow
-- Push branch to origin and open a Pull Request targeting `main`.
-- Require at least 1 approving review before merge.
-- Run tests and linters locally before opening PR.
+ワークフロー
+- ブランチを origin に push して `main` をターゲットに Pull Request を作成してください。
+- マージ前に少なくとも 1 件の承認レビューが必要です。
+- PR 作成前にローカルでテストとリンターを実行してください。
 
 Pull Request
-- Describe the change and link related issue/PR.
-- Keep changes small and focused.
+- 変更内容と関連する issue/PR を記載してください。
+- 変更は小さく、目的を絞ってください。
 
-Thanks for contributing!
+ご協力ありがとうございます！

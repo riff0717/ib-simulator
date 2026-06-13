@@ -1,14 +1,14 @@
-## Summary
+## 概要
 
-Describe the change and why it was made.
+変更内容とその理由を簡潔に記載してください。
 
-## Related issue
+## 関連 issue
 - Closes: #<issue_number>
 
-## Checklist
-- [ ] Tests added/updated
-- [ ] Linting passed
-- [ ] Changes documented (if needed)
+## チェックリスト
+- [ ] テストを追加／更新した
+- [ ] Lint が通っている
+- [ ] 必要なドキュメントを更新した
 
-## Reviewer notes
-Add any special instructions for reviewers or manual testing steps.
+## レビュア向けメモ
+レビューや手動確認時の注意点や確認手順を記載してください。
