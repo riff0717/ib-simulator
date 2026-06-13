@@ -24,10 +24,11 @@ down:
 
 build:
 	@if command -v docker >/dev/null 2>&1; then \
-		docker build -t ib-simulator:latest .; \
-		echo "Image built: ib-simulator:latest"; \
+		echo "Building images via docker compose..."; \
+		docker compose build || docker-compose build; \
+		echo "Compose images built"; \
 	else \
-		echo "Docker not available; cannot build image"; \
+		echo "Docker not available; cannot build images"; \
 	fi
 
 logs:
