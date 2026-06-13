@@ -1,28 +1,49 @@
 # ib-simulator
-https://github.com/uy0311/innovative-balance のシミュレーターです
+このリポジトリは https://github.com/uy0311/innovative-balance のシミュレーターです。
 
-Docker での開発手順:
+開発環境（概要）
 
-1. 開発サーバ起動（nginxでホスト、カレントディレクトリをマウント）
+このプロジェクトは静的ファイルをホストする形で動作します。開発には Docker と docker-compose を推奨します。Docker を使わない簡易的な手動手順も下に記載していますが、CI/CD や本番イメージ作成は Docker 前提です。
 
-   ./start-dev.sh
+前提条件
 
-   または
+- Docker（推奨）
+- docker-compose（環境によっては Docker の compose plugin を使用）
+- make（オプション、Makefile が存在する場合）
 
-   make dev
+ローカルでの開発サーバ起動（Docker 推奨）
 
-2. ブラウザで http://localhost:8080/ を開き、hoi4-innova.html を確認してください。
+1. Docker が利用可能な場合（推奨）:
 
-注意とトラブルシュート:
-- リモート環境で sudo が必要な場合は、ホストに Docker をインストールし、現在のユーザーを docker グループに追加してください（管理者権限が必要）。
+   # compose v2 (docker compose) を使う例
+   docker compose up --build -d
+
+   # または古い docker-compose を使う場合
+   docker-compose up --build -d
+
+   ブラウザで http://localhost:8080/ を開き、hoi4-innova.html を確認してください。
+
+2. Docker が使えない場合（手動）:
+
+   プロジェクトのルートで静的ファイルを確認したいだけであれば、python3 による簡易サーバを手動で起動できます（注意: これは簡易確認用で、本番用途には適しません）。
+
+   cd /path/to/repo
+   python3 -m http.server 8080
+
+   その後ブラウザで http://localhost:8080/ を開いてください。
+
+トラブルシュート
+
+- Docker をコマンド実行する権限がない場合、ホストへ Docker をインストールし、現在のユーザーを docker グループへ追加してください:
 
   sudo usermod -aG docker $USER
   newgrp docker
 
-- Docker が使えない環境では start-dev.sh は Docker を想定しています。開発サーバを手動で起動する場合は、Docker を使うか独自に静的サーバを用意してください。
+- ポート 8080 が既に使われている場合は別ポートを指定して起動してください（例: python3 -m http.server 9000、あるいは docker run の -p マッピングを変更）。
 
-プロダクション用イメージをビルドする場合:
+プロダクション用イメージのビルド
 
-   make build
-   docker run --rm -p 8080:80 ib-simulator:latest
+  make build
+  docker run --rm -p 8080:80 ib-simulator:latest
 
+（start-dev.sh は削除されました。自動起動スクリプトが必要な場合は代替スクリプトを作成してください。）
