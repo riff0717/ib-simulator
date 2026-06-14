@@ -25,9 +25,11 @@ export default function App() {
   const [civPerMonth, setCivPerMonth] = useState(2)
   const [milPerMonth, setMilPerMonth] = useState(3)
 
-  const [basePower, setBasePower] = useState(5) // 1民需あたりの1日建設力（デフォルト5）
-  const [civBuildCost, setCivBuildCost] = useState(3000) // 民需1基あたりの必要作業量（任意調整）
+  const [perFactoryOutput, setPerFactoryOutput] = useState(5) // 民需1基あたりの出力（＝5）
+  const [buildSpeedBonusPercent, setBuildSpeedBonusPercent] = useState(0) // 建設速度ボーナス（%）
+  const [civBuildCost, setCivBuildCost] = useState(3000) // 民需1基あたりの必要作業量
   const [milBuildCost, setMilBuildCost] = useState(6000) // 軍需1基あたりの必要作業量
+  const [consumerGoodsPercent, setConsumerGoodsPercent] = useState(30) // 消費財に使われる民需の割合（%）
 
   const data = useMemo(() => {
     const out = []
@@ -41,18 +43,27 @@ export default function App() {
     const civPhaseDays = civBuildMonths * daysPerMonth
 
     for (let day = 0; day < totalDays; day++) {
-      // 1日ごとの建設力: civ（民需工場数）× basePower（1日あたりの工場出力）
-      const dailyPower = civ * basePower
+      // 建設利用可能な民需工場数 = 全民需工場数 - 消費財に使用される民需工場数
+      const consumerCoeff = consumerGoodsPercent / 100
+      const availableCiv = civ * (1 - consumerCoeff)
+      // 民需工場出力 = 建設利用可能な民需工場数 × perFactoryOutput
+      const constructionOutput = availableCiv * perFactoryOutput
+      // 建設速度ボーナスを小数に
+      const speedBonus = buildSpeedBonusPercent / 100
+      // 1日あたりの工事進捗
+      const dailyWork = constructionOutput * (1 + speedBonus)
 
       if (day < civPhaseDays) {
-        carryCiv += dailyPower
+        // 民需建設
+        carryCiv += dailyWork
         const built = Math.floor(carryCiv / civBuildCost)
         if (built > 0) {
           civ += built
           carryCiv -= built * civBuildCost
         }
       } else {
-        carryMil += dailyPower
+        // 軍需建設
+        carryMil += dailyWork
         const builtM = Math.floor(carryMil / milBuildCost)
         if (builtM > 0) {
           mil += builtM
@@ -70,13 +81,15 @@ export default function App() {
           civ: Math.round(civ * 100) / 100,
           mil: Math.round(mil * 100) / 100,
           carryCiv: Math.round(carryCiv * 100) / 100,
-          carryMil: Math.round(carryMil * 100) / 100
+          carryMil: Math.round(carryMil * 100) / 100,
+          availableCiv: Math.round(availableCiv * 100) / 100,
+          dailyWork: Math.round(dailyWork * 100) / 100
         })
       }
     }
 
     return out
-  }, [initialCiv, initialMil, months, civBuildMonths, basePower, civBuildCost, milBuildCost])
+  }, [initialCiv, initialMil, months, civBuildMonths, perFactoryOutput, buildSpeedBonusPercent, civBuildCost, milBuildCost, consumerGoodsPercent])
 
   // 簡易 SVG ラインチャート
   const Chart = ({data}) => {
@@ -125,7 +138,9 @@ export default function App() {
         <label>民需を建設する期間（月）: <input type="number" value={civBuildMonths} min="0" onChange={e=>setCivBuildMonths(Number(e.target.value))} /></label>
 
         <h4>建設パラメータ（調整可）</h4>
-        <label>1民需当たりの1日建設力: <input type="number" value={basePower} min="0" step="0.1" onChange={e=>setBasePower(Number(e.target.value))} />（デフォルト: 5）</label>
+        <label>消費財に使用される民需の割合（%）: <input type="number" value={consumerGoodsPercent} min="0" max="100" step="0.1" onChange={e=>setConsumerGoodsPercent(Number(e.target.value))} />（デフォルト: 30%）</label>
+        <label>民需1基あたりの出力: <input type="number" value={perFactoryOutput} min="0" step="0.1" onChange={e=>setPerFactoryOutput(Number(e.target.value))} />（通常: 5）</label>
+        <label>建設速度ボーナス（%）: <input type="number" value={buildSpeedBonusPercent} min="-90" step="0.1" onChange={e=>setBuildSpeedBonusPercent(Number(e.target.value))} />（例: 0 = なし, 50 = +50%）</label>
         <label>民需1基あたりの必要作業量: <input type="number" value={civBuildCost} min="1" step="1" onChange={e=>setCivBuildCost(Number(e.target.value))} />（デフォルト: 3000）</label>
         <label>軍需1基あたりの必要作業量: <input type="number" value={milBuildCost} min="1" step="1" onChange={e=>setMilBuildCost(Number(e.target.value))} />（デフォルト: 6000）</label>
       </div>
