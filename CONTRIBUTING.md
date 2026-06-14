@@ -1,18 +1,21 @@
-# コントリビューション
+# Contributing
 
-このリポジトリでは GitHub Flow を採用しています。
+Branching:
+- main: protected, always the production-ready branch
+- develop: integration branch for feature branches
+- feature/*, fix/*, chore/*: create from develop
 
-ブランチ
-- `main` から短命のフィーチャーブランチを作成してください。
-- 命名例: `feature/ISSUE-123-説明`、`fix/ISSUE-123-説明`、`chore/説明`。
+PR process:
+- Open a PR from a feature branch into develop (or develop -> main for releases)
+- Ensure CI passes and include at least 1 approving review
+- Use descriptive title and link any issues
 
-ワークフロー
-- ブランチを origin に push して `main` をターゲットに Pull Request を作成してください。
-- マージ前に少なくとも 1 件の承認レビューが必要です。
-- PR 作成前にローカルでテストとリンターを実行してください。
+CI/CD:
+- GitHub Actions runs on push and pull_request for main and develop
+- Deploy to GitHub Pages occurs when changes are merged into main
 
-Pull Request
-- 変更内容と関連する issue/PR を記載してください。
-- 変更は小さく、目的を絞ってください。
+Commit messages:
+- Use imperative tense: "Add feature", "Fix bug"
 
-ご協力ありがとうございます！
+CODEOWNERS:
+- Add CODEOWNERS at .github/CODEOWNERS to enforce reviews by owners

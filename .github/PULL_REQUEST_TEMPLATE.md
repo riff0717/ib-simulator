@@ -1,14 +1,10 @@
-## 概要
+## Summary
+Describe the change and why it's needed.
 
-変更内容とその理由を簡潔に記載してください。
+## Checklist
+- [ ] CI passes
+- [ ] Reviewed and approved
+- [ ] Changelog updated (if applicable)
 
-## 関連 issue
-- Closes: #<issue_number>
-
-## チェックリスト
-- [ ] テストを追加／更新した
-- [ ] Lint が通っている
-- [ ] 必要なドキュメントを更新した
-
-## レビュア向けメモ
-レビューや手動確認時の注意点や確認手順を記載してください。
+## Notes for reviewers
+- Anything reviewers should focus on
