@@ -132,7 +132,9 @@ export default function App() {
 
       <div className="results">
         <h2>タイムライン</h2>
-        <Chart data={data} />
+        <div className="chart-wrapper">
+          <Chart data={data} />
+        </div>
       </div>
 
       <footer>
