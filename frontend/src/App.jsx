@@ -36,20 +36,23 @@ export default function App() {
     let carryCiv = 0 // 建設進捗の繰越（民需）
     let carryMil = 0 // 建設進捗の繰越（軍需）
 
-    for (let i = 0; i < months; i++) {
-      const monthLabel = `${startYear}/${String((startMonth + i -1)%12 +1).padStart(2,'0')}`
-      const days = 30 // 簡易化: 1ヶ月を30日として計算
-      const monthlyPower = civ * basePower * days
+    const daysPerMonth = 30 // 簡易化: 1ヶ月を30日として計算
+    const totalDays = months * daysPerMonth
+    const civPhaseDays = civBuildMonths * daysPerMonth
 
-      if (i < civBuildMonths) {
-        carryCiv += monthlyPower
+    for (let day = 0; day < totalDays; day++) {
+      // 1日ごとの建設力: civ（民需工場数）× basePower（1日あたりの工場出力）
+      const dailyPower = civ * basePower
+
+      if (day < civPhaseDays) {
+        carryCiv += dailyPower
         const built = Math.floor(carryCiv / civBuildCost)
         if (built > 0) {
           civ += built
           carryCiv -= built * civBuildCost
         }
       } else {
-        carryMil += monthlyPower
+        carryMil += dailyPower
         const builtM = Math.floor(carryMil / milBuildCost)
         if (builtM > 0) {
           mil += builtM
@@ -57,17 +60,23 @@ export default function App() {
         }
       }
 
-      out.push({
-        idx: i,
-        label: monthLabel,
-        civ: Math.round(civ*100)/100,
-        mil: Math.round(mil*100)/100,
-        carryCiv: Math.round(carryCiv*100)/100,
-        carryMil: Math.round(carryMil*100)/100
-      })
+      // 月末ごとにスナップショットを取る（チャート表示用）
+      if ((day + 1) % daysPerMonth === 0) {
+        const monthIdx = Math.floor(day / daysPerMonth)
+        const monthLabel = `${startYear}/${String((startMonth + monthIdx - 1) % 12 + 1).padStart(2, '0')}`
+        out.push({
+          idx: monthIdx,
+          label: monthLabel,
+          civ: Math.round(civ * 100) / 100,
+          mil: Math.round(mil * 100) / 100,
+          carryCiv: Math.round(carryCiv * 100) / 100,
+          carryMil: Math.round(carryMil * 100) / 100
+        })
+      }
     }
+
     return out
-  }, [initialCiv, initialMil, months, civBuildMonths, civPerMonth, milPerMonth, basePower, civBuildCost, milBuildCost])
+  }, [initialCiv, initialMil, months, civBuildMonths, basePower, civBuildCost, milBuildCost])
 
   // 簡易 SVG ラインチャート
   const Chart = ({data}) => {
