@@ -1,5 +1,5 @@
 # Makefile for common dev tasks
-.PHONY: dev up down build logs
+.PHONY: dev up down build logs dev-frontend logs-frontend
 
 dev: up
 	@echo "Dev environment started. Open http://localhost:8080/hoi4-innova.html"
@@ -33,3 +33,16 @@ build:
 
 logs:
 	@docker compose logs --follow || docker-compose logs --follow || echo "No compose logs available"
+
+# Frontend dev helpers
+dev-frontend:
+	@if command -v docker >/dev/null 2>&1; then \
+		echo "Starting frontend dev server via docker compose..."; \
+		docker compose up --build frontend; \
+	else \
+		echo "Docker not available; cannot start frontend dev"; \
+		exit 2; \
+	fi
+
+logs-frontend:
+	@docker compose logs --follow frontend || echo "No frontend logs available"
