@@ -20,7 +20,7 @@ export default function App() {
   const [initialMil, setInitialMil] = useState(0)
   const [months, setMonths] = useState(24)
 
-  // Build plan: build civilian factories for civMonths, then build military
+  // 建設計画: まず民需を建て、その後軍需を建てる
   const [civBuildMonths, setCivBuildMonths] = useState(6)
   const [civPerMonth, setCivPerMonth] = useState(2)
   const [milPerMonth, setMilPerMonth] = useState(3)
@@ -30,7 +30,7 @@ export default function App() {
     let civ = initialCiv
     let mil = initialMil
     for (let i = 0; i < months; i++) {
-      // month i: if within civBuildMonths, add civilian builds, else military builds
+      // i 月目: civBuildMonths の間は民需、そうでなければ軍需を増やす
       if (i < civBuildMonths) civ += civPerMonth
       else mil += milPerMonth
       out.push({
@@ -43,7 +43,7 @@ export default function App() {
     return out
   }, [initialCiv, initialMil, months, civBuildMonths, civPerMonth, milPerMonth])
 
-  // Simple SVG line chart
+  // 簡易 SVG ラインチャート
   const Chart = ({data}) => {
     const w = Math.max(600, data.length * 30)
     const h = 240
@@ -54,51 +54,51 @@ export default function App() {
     const linePath = arr => arr.map((d,i)=>`${i===0? 'M':'L'} ${sx(i)} ${sy(d)}`).join(' ')
     return (
       <svg width={w} height={h} style={{background:'#fff',border:'1px solid #eee'}}>
-        {/* axes */}
+        {/* 軸 */}
         <line x1={pad} y1={h-pad} x2={w-pad} y2={h-pad} stroke="#ccc" />
         <line x1={pad} y1={pad} x2={pad} y2={h-pad} stroke="#ccc" />
-        {/* civ line */}
+        {/* 民需ライン */}
         <path d={linePath(data.map(d=>d.civ))} fill="none" stroke="#1f77b4" strokeWidth={2} />
-        {/* mil line */}
+        {/* 軍需ライン */}
         <path d={linePath(data.map(d=>d.mil))} fill="none" stroke="#ff7f0e" strokeWidth={2} />
-        {/* labels */}
+        {/* x軸ラベル */}
         {data.map((d,i)=> (
           i%Math.ceil(data.length/12||1)===0 && <text key={i} x={sx(i)} y={h-pad+14} fontSize={10} textAnchor="middle">{d.label}</text>
         ))}
-        {/* legend */}
+        {/* 凡例 */}
         <rect x={w-pad-120} y={pad-28} width={110} height={26} fill="#fff" stroke="#eee" />
         <circle cx={w-pad-100} cy={pad-16} r={5} fill="#1f77b4" />
-        <text x={w-pad-88} y={pad-13} fontSize={12}>Civilian</text>
+        <text x={w-pad-88} y={pad-13} fontSize={12}>民需</text>
         <circle cx={w-pad-40} cy={pad-16} r={5} fill="#ff7f0e" />
-        <text x={w-pad-28} y={pad-13} fontSize={12}>Military</text>
+        <text x={w-pad-28} y={pad-13} fontSize={12}>軍需</text>
       </svg>
     )
   }
 
   return (
     <div className="container">
-      <h1>Factory build timeline</h1>
-      <p>Start date: {startYear}/{String(startMonth).padStart(2,'0')}/01</p>
+      <h1>工場建設タイムライン</h1>
+      <p>開始日: {startYear}/{String(startMonth).padStart(2,'0')}/01</p>
 
       <div className="controls">
-        <label>Initial civilian factories: <input type="number" value={initialCiv} min="0" onChange={e=>setInitialCiv(Number(e.target.value))} /></label>
-        <label>Initial military factories: <input type="number" value={initialMil} min="0" onChange={e=>setInitialMil(Number(e.target.value))} /></label>
-        <label>Simulation months: <input type="number" value={months} min="1" onChange={e=>setMonths(Number(e.target.value))} /></label>
+        <label>初期民需工場数: <input type="number" value={initialCiv} min="0" onChange={e=>setInitialCiv(Number(e.target.value))} /></label>
+        <label>初期軍需工場数: <input type="number" value={initialMil} min="0" onChange={e=>setInitialMil(Number(e.target.value))} /></label>
+        <label>シミュレーション月数: <input type="number" value={months} min="1" onChange={e=>setMonths(Number(e.target.value))} /></label>
 
         <hr />
-        <h3>Build plan</h3>
-        <label>Build civilian for months: <input type="number" value={civBuildMonths} min="0" onChange={e=>setCivBuildMonths(Number(e.target.value))} /></label>
-        <label>Civ factories completed per month: <input type="number" value={civPerMonth} min="0" step="0.1" onChange={e=>setCivPerMonth(Number(e.target.value))} /></label>
-        <label>Mil factories completed per month (after civ phase): <input type="number" value={milPerMonth} min="0" step="0.1" onChange={e=>setMilPerMonth(Number(e.target.value))} /></label>
+        <h3>建設計画</h3>
+        <label>民需を建設する期間（月）: <input type="number" value={civBuildMonths} min="0" onChange={e=>setCivBuildMonths(Number(e.target.value))} /></label>
+        <label>1か月当たりの民需完成数: <input type="number" value={civPerMonth} min="0" step="0.1" onChange={e=>setCivPerMonth(Number(e.target.value))} /></label>
+        <label>（民需フェーズ後）1か月当たりの軍需完成数: <input type="number" value={milPerMonth} min="0" step="0.1" onChange={e=>setMilPerMonth(Number(e.target.value))} /></label>
       </div>
 
       <div className="results">
-        <h2>Timeline</h2>
+        <h2>タイムライン</h2>
         <Chart data={data} />
       </div>
 
       <footer>
-        <small>Timeline shows cumulative factories by month. Adjust the build plan and simulation length as needed.</small>
+        <small>月ごとの累積工場数を表示します。建設計画とシミュレーション期間を調整してください。</small>
       </footer>
     </div>
   )
