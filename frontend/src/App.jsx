@@ -25,23 +25,49 @@ export default function App() {
   const [civPerMonth, setCivPerMonth] = useState(2)
   const [milPerMonth, setMilPerMonth] = useState(3)
 
+  const [basePower, setBasePower] = useState(5) // 1民需あたりの1日建設力（デフォルト5）
+  const [civBuildCost, setCivBuildCost] = useState(3000) // 民需1基あたりの必要作業量（任意調整）
+  const [milBuildCost, setMilBuildCost] = useState(6000) // 軍需1基あたりの必要作業量
+
   const data = useMemo(() => {
     const out = []
     let civ = initialCiv
     let mil = initialMil
+    let carryCiv = 0 // 建設進捗の繰越（民需）
+    let carryMil = 0 // 建設進捗の繰越（軍需）
+
     for (let i = 0; i < months; i++) {
-      // i 月目: civBuildMonths の間は民需、そうでなければ軍需を増やす
-      if (i < civBuildMonths) civ += civPerMonth
-      else mil += milPerMonth
+      const monthLabel = `${startYear}/${String((startMonth + i -1)%12 +1).padStart(2,'0')}`
+      const days = 30 // 簡易化: 1ヶ月を30日として計算
+      const monthlyPower = civ * basePower * days
+
+      if (i < civBuildMonths) {
+        carryCiv += monthlyPower
+        const built = Math.floor(carryCiv / civBuildCost)
+        if (built > 0) {
+          civ += built
+          carryCiv -= built * civBuildCost
+        }
+      } else {
+        carryMil += monthlyPower
+        const builtM = Math.floor(carryMil / milBuildCost)
+        if (builtM > 0) {
+          mil += builtM
+          carryMil -= builtM * milBuildCost
+        }
+      }
+
       out.push({
         idx: i,
-        label: `${startYear}/${String((startMonth + i -1)%12 +1).padStart(2,'0')}`,
+        label: monthLabel,
         civ: Math.round(civ*100)/100,
-        mil: Math.round(mil*100)/100
+        mil: Math.round(mil*100)/100,
+        carryCiv: Math.round(carryCiv*100)/100,
+        carryMil: Math.round(carryMil*100)/100
       })
     }
     return out
-  }, [initialCiv, initialMil, months, civBuildMonths, civPerMonth, milPerMonth])
+  }, [initialCiv, initialMil, months, civBuildMonths, civPerMonth, milPerMonth, basePower, civBuildCost, milBuildCost])
 
   // 簡易 SVG ラインチャート
   const Chart = ({data}) => {
@@ -88,8 +114,11 @@ export default function App() {
         <hr />
         <h3>建設計画</h3>
         <label>民需を建設する期間（月）: <input type="number" value={civBuildMonths} min="0" onChange={e=>setCivBuildMonths(Number(e.target.value))} /></label>
-        <label>1か月当たりの民需完成数: <input type="number" value={civPerMonth} min="0" step="0.1" onChange={e=>setCivPerMonth(Number(e.target.value))} /></label>
-        <label>（民需フェーズ後）1か月当たりの軍需完成数: <input type="number" value={milPerMonth} min="0" step="0.1" onChange={e=>setMilPerMonth(Number(e.target.value))} /></label>
+
+        <h4>建設パラメータ（調整可）</h4>
+        <label>1民需当たりの1日建設力: <input type="number" value={basePower} min="0" step="0.1" onChange={e=>setBasePower(Number(e.target.value))} />（デフォルト: 5）</label>
+        <label>民需1基あたりの必要作業量: <input type="number" value={civBuildCost} min="1" step="1" onChange={e=>setCivBuildCost(Number(e.target.value))} />（デフォルト: 3000）</label>
+        <label>軍需1基あたりの必要作業量: <input type="number" value={milBuildCost} min="1" step="1" onChange={e=>setMilBuildCost(Number(e.target.value))} />（デフォルト: 6000）</label>
       </div>
 
       <div className="results">
