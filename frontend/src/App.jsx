@@ -32,6 +32,7 @@ export default function App() {
   const [consumerGoodsPercent, setConsumerGoodsPercent] = useState(30) // 消費財に使われる民需の割合（%）
   const [maxCivPerConstruction, setMaxCivPerConstruction] = useState(20) // 1建設あたりに割り当てられる民需の最大数
   const [civQueueSlots, setCivQueueSlots] = useState(10) // 同時に割り当て可能な建設キュー数（スロット）
+  const [fitToWidth, setFitToWidth] = useState(true) // チャートを幅に合わせて縮小表示するかどうか
 
   const data = useMemo(() => {
     const out = []
@@ -217,10 +218,12 @@ export default function App() {
       <div className="results">
         <h2>タイムライン</h2>
         <div className="chart-controls">
-          <label><input type="checkbox" checked={true} readOnly /> 幅に合わせる (縮小表示)</label>
+          <label>
+            <input type="checkbox" checked={fitToWidth} onChange={e=>setFitToWidth(e.target.checked)} /> 幅に合わせる (縮小表示)
+          </label>
         </div>
-        <div className={`chart-wrapper fit` }>
-          <Chart data={data} fit={true} />
+        <div className={`chart-wrapper ${fitToWidth ? 'fit' : ''}`}>
+          <Chart data={data} fit={fitToWidth} />
         </div>
       </div>
 
