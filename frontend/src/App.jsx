@@ -96,28 +96,50 @@ export default function App() {
     return out
   }, [initialCiv, initialMil, months, civBuildMonths, perFactoryOutput, buildSpeedBonusPercent, civBuildCost, milBuildCost, consumerGoodsPercent])
 
-  // 簡易 SVG ラインチャート
+  // 簡易 SVG ラインチャート（縦軸ラベル付き）
   const Chart = ({data}) => {
     const w = Math.max(600, data.length * 30)
-    const h = 240
-    const pad = 40
-    const max = Math.max(...data.map(d=>Math.max(d.civ,d.mil)), 1)
+    const h = 260
+    const pad = 60 // 左余白を広げて縦軸ラベルを表示
+    const plotHeight = h - 2 * pad
+    const maxVal = Math.max(...data.map(d=>Math.max(d.civ,d.mil)), 1)
+    // 上限を分かりやすく丸める（5目盛り）
+    const ticks = 5
+    const niceMax = Math.ceil(maxVal / 10) * 10 || Math.ceil(maxVal)
     const sx = i => pad + (i/(data.length-1 || 1))*(w-2*pad)
-    const sy = v => h - pad - (v/max)*(h-2*pad)
+    const sy = v => pad + (1 - v / niceMax) * plotHeight
     const linePath = arr => arr.map((d,i)=>`${i===0? 'M':'L'} ${sx(i)} ${sy(d)}`).join(' ')
+
+    // 目盛り値の配列
+    const tickValues = Array.from({length: ticks+1}, (_,i) => Math.round(niceMax * (i / ticks)))
+
     return (
       <svg width={w} height={h} style={{background:'#fff',border:'1px solid #eee'}}>
+        {/* グリッドと縦軸ラベル */}
+        {tickValues.map((tv,ti)=>{
+          const y = sy(tv)
+          return (
+            <g key={ti}>
+              <line x1={pad} y1={y} x2={w-pad} y2={y} stroke="#eee" />
+              <text x={pad-8} y={y+4} fontSize={11} textAnchor="end">{tv}</text>
+            </g>
+          )
+        })}
+
         {/* 軸 */}
         <line x1={pad} y1={h-pad} x2={w-pad} y2={h-pad} stroke="#ccc" />
         <line x1={pad} y1={pad} x2={pad} y2={h-pad} stroke="#ccc" />
+
         {/* 民需ライン */}
         <path d={linePath(data.map(d=>d.civ))} fill="none" stroke="#1f77b4" strokeWidth={2} />
         {/* 軍需ライン */}
         <path d={linePath(data.map(d=>d.mil))} fill="none" stroke="#ff7f0e" strokeWidth={2} />
+
         {/* x軸ラベル */}
         {data.map((d,i)=> (
-          i%Math.ceil(data.length/12||1)===0 && <text key={i} x={sx(i)} y={h-pad+14} fontSize={10} textAnchor="middle">{d.label}</text>
+          i%Math.ceil(data.length/12||1)===0 && <text key={i} x={sx(i)} y={h-pad+18} fontSize={10} textAnchor="middle">{d.label}</text>
         ))}
+
         {/* 凡例 */}
         <rect x={w-pad-120} y={pad-28} width={110} height={26} fill="#fff" stroke="#eee" />
         <circle cx={w-pad-100} cy={pad-16} r={5} fill="#1f77b4" />
