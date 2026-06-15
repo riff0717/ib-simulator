@@ -16,9 +16,9 @@ export default function App() {
   const startYear = 1936
   const startMonth = 1
 
-  const [initialCiv, setInitialCiv] = useState(30)
-  const [initialMil, setInitialMil] = useState(0)
-  const [months, setMonths] = useState(24)
+  const [initialCiv, setInitialCiv] = useState(73)
+  const [initialMil, setInitialMil] = useState(15)
+  const [months, setMonths] = useState(72)
 
   // 建設計画: まず民需を建て、その後軍需を建てる
   const [civBuildMonths, setCivBuildMonths] = useState(6)
