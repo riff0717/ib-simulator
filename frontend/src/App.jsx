@@ -30,6 +30,8 @@ export default function App() {
   const [civBuildCost, setCivBuildCost] = useState(3000) // 民需1基あたりの必要作業量
   const [milBuildCost, setMilBuildCost] = useState(6000) // 軍需1基あたりの必要作業量
   const [consumerGoodsPercent, setConsumerGoodsPercent] = useState(30) // 消費財に使われる民需の割合（%）
+  const [maxCivPerConstruction, setMaxCivPerConstruction] = useState(20) // 1建設あたりに割り当てられる民需の最大数
+  const [civQueueSlots, setCivQueueSlots] = useState(10) // 同時に割り当て可能な建設キュー数（スロット）
 
   const data = useMemo(() => {
     const out = []
@@ -46,8 +48,11 @@ export default function App() {
       // 建設利用可能な民需工場数 = 全民需工場数 - 消費財に使用される民需工場数
       const consumerCoeff = consumerGoodsPercent / 100
       const availableCiv = civ * (1 - consumerCoeff)
-      // 民需工場出力 = 建設利用可能な民需工場数 × perFactoryOutput
-      const constructionOutput = availableCiv * perFactoryOutput
+      // キューのスロット数と1建設あたり最大割当から、建設に割り当て可能な民需の上限を算出
+      const maxAssignable = civQueueSlots * maxCivPerConstruction
+      const assignedCiv = Math.min(availableCiv, maxAssignable)
+      // 民需工場出力 = assignedCiv × perFactoryOutput
+      const constructionOutput = assignedCiv * perFactoryOutput
       // 建設速度ボーナスを小数に
       const speedBonus = buildSpeedBonusPercent / 100
       // 1日あたりの工事進捗
@@ -141,6 +146,8 @@ export default function App() {
         <label>消費財に使用される民需の割合（%）: <input type="number" value={consumerGoodsPercent} min="0" max="100" step="0.1" onChange={e=>setConsumerGoodsPercent(Number(e.target.value))} />（デフォルト: 30%）</label>
         <label>民需1基あたりの出力: <input type="number" value={perFactoryOutput} min="0" step="0.1" onChange={e=>setPerFactoryOutput(Number(e.target.value))} />（通常: 5）</label>
         <label>建設速度ボーナス（%）: <input type="number" value={buildSpeedBonusPercent} min="-90" step="0.1" onChange={e=>setBuildSpeedBonusPercent(Number(e.target.value))} />（例: 0 = なし, 50 = +50%）</label>
+        <label>1建設あたりに割り当てられる最大民需数: <input type="number" value={maxCivPerConstruction} min="1" step="1" onChange={e=>setMaxCivPerConstruction(Number(e.target.value))} />（デフォルト: 20）</label>
+        <label>同時に割り当て可能な建設キュー数（スロット）: <input type="number" value={civQueueSlots} min="1" step="1" onChange={e=>setCivQueueSlots(Number(e.target.value))} />（デフォルト: 10）</label>
         <label>民需1基あたりの必要作業量: <input type="number" value={civBuildCost} min="1" step="1" onChange={e=>setCivBuildCost(Number(e.target.value))} />（デフォルト: 3000）</label>
         <label>軍需1基あたりの必要作業量: <input type="number" value={milBuildCost} min="1" step="1" onChange={e=>setMilBuildCost(Number(e.target.value))} />（デフォルト: 6000）</label>
       </div>
