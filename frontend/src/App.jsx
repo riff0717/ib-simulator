@@ -100,6 +100,7 @@ export default function App() {
   // 簡易 SVG ラインチャート（縦軸ラベル付き）
   const Chart = ({data, fit}) => {
     const internalW = Math.max(600, data.length * 30)
+    const w = internalW
     const h = 260
     const pad = 60 // 左余白を広げて縦軸ラベルを表示
     const plotHeight = h - 2 * pad
